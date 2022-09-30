@@ -1,5 +1,6 @@
 ---
-title: "Tidy Data"
+title: "Homework 2"
+author: "Jennifer Mizhquiri Barbecho"
 output: github_document
 ---
 
@@ -7,117 +8,29 @@ output: github_document
 library(tidyverse)
 library(readxl) #excel
 library(haven) #sas
+library(ggplot2)
 ```
-*gather and spread are older terms from tidyverse and not pivot longer (gather) pivot wider (spread)
+
+
+Read and clean the data; retain line, station, name, station latitude / longitude, routes served, entry, vending, entrance type, and ADA compliance. Convert the entry variable from character (YES vs NO) to a logical variable (the ifelse or recode function may be useful).
+
+Write a short paragraph about this dataset – explain briefly what variables the dataset contains, describe your data cleaning steps so far, and give the dimension (rows x columns) of the resulting dataset. Are these data tidy?
+
+
+Read the data
 
 ```{r, eval = FALSE}
 
-litters_df = read_csv("./data/FAS_litters.csv")
+read_csv("./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv")
 ```
-
-
 ```{r}
-litters_wide = 
-  read_csv("./data/FAS_litters.csv") %>%
+nyctransit_df = 
+  read_csv("./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv") %>%
   janitor::clean_names() %>%
-  select(litter_number, ends_with("weight")) %>% 
-  pivot_longer(
-    gd0_weight:gd18_weight,
-    names_to = "gd", 
-    values_to = "weight") %>% 
-  mutate(gd = recode(gd, "gd0_weight" = 0, "gd18_weight" = 18))
+  select(line:entry, vending, ada) %>% 
+  mutate(entry <- recode(entry, "YES" = 1, "NO" = 0))
 ```
-
-
 ```{r}
-analysis_result = tibble(
-  group = c("treatment", "treatment", "placebo", "placebo"),
-  time = c("pre", "post", "pre", "post"),
-  mean = c(4, 8, 3.5, 4)
-)
+nyctransit_df
 ```
 
-You see that below the time gets transposed to a time = pre --> pre becomes a column and time = post --> post becomes a column. the corresponding mean for each gets there
-
-
-```{r}
-pivot_wider(
-  analysis_result, 
-  names_from = "time", 
-  values_from = "mean")
-```
-_Fellowship Data_
-
-
-```{r}
-fellowship_ring = 
-  readxl::read_excel("./data/LotR_Words.xlsx", range = "B3:D6") %>%
-  mutate(movie = "fellowship_ring")
-
-two_towers = 
-  readxl::read_excel("./data/LotR_Words.xlsx", range = "F3:H6") %>%
-  mutate(movie = "two_towers")
-
-return_king = 
-  readxl::read_excel("./data/LotR_Words.xlsx", range = "J3:L6") %>%
-  mutate(movie = "return_king")
-```
-
-* using bind rows 
-
-  * REQ: all of the columns in the datasets have the same names (race, female, movie)
-  
-```{r}
-lotr_tidy = 
-  bind_rows(fellowship_ring, two_towers, return_king) %>%
-  janitor::clean_names() %>%
-  pivot_longer(
-    female:male,
-    names_to = "gender", #formerly 1 col = female, 1 col = male --> 
-    values_to = "words") %>% #formerly 1 value in a row denoting female and male frequency counts UNDER each respective column
-  mutate(race = str_to_lower(race)) %>% 
-  select(movie, everything()) 
-```
-
-
-### joining
-
-```{r}
-pup_data = 
-  read_csv("./data/FAS_pups.csv") %>%
-  janitor::clean_names() %>%
-  mutate(
-    sex = recode(sex, `1` = "male", `2` = "female"), #note that ` backquotepups_ tells R to output a number (vs "" which is for char)
-    sex = factor(sex)) 
-```
-
-```{r}
-litter_data = 
-  read_csv("./data/FAS_litters.csv") %>%
-  janitor::clean_names() %>%
-  separate(group, into = c("dose", "day_of_tx"), sep = 3) %>%
-  relocate(litter_number) %>%
-  mutate(
-    wt_gain = gd18_weight - gd0_weight,
-    dose = str_to_lower(dose))
-```
-
-## left join 
-
-My intent is to analyze the baby 
-
-* if there is a mom with a missing baby --> i don't need it 
-* i want to join the mom (litter) (y) data TO the pup data (x)
-* includes all rows of data x 
-* (right join) includes all rows of data y
-
-```{r}
-fas_data = 
-  left_join(pup_data, litter_data, by = "litter_number")
-```
-
-
-
-## anti join
-
-* 
