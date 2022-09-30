@@ -12,25 +12,42 @@ library(ggplot2)
 ```
 
 
-Read and clean the data; retain line, station, name, station latitude / longitude, routes served, entry, vending, entrance type, and ADA compliance. Convert the entry variable from character (YES vs NO) to a logical variable (the ifelse or recode function may be useful).
 
-Write a short paragraph about this dataset – explain briefly what variables the dataset contains, describe your data cleaning steps so far, and give the dimension (rows x columns) of the resulting dataset. Are these data tidy?
-
+# Problem 1
 
 Read the data
 
-```{r, eval = FALSE}
+```{r, echo = FALSE}
 
 read_csv("./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv")
 ```
-```{r}
+```{r, message = FALSE}
 nyctransit_df = 
   read_csv("./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv") %>%
-  janitor::clean_names() %>%
+  janitor::clean_names() %>% # figure out how to make NAs blank
   select(line:entry, vending, ada) %>% 
-  mutate(entry <- recode(entry, "YES" = 1, "NO" = 0))
+  mutate(entry = recode(entry, "YES" = 1, "NO" = 0)) #when to use <-
+
 ```
 ```{r}
-nyctransit_df
+head(nyctransit_df)
+```
+This dataset contains administrative, compliance, and geographic data on the NYC transit system. It has `r ncol(nyctransit_df)` columns and `r nrow(nyctransit_df)` rows. At this point, the variable names have been cleaned and one variable (entry) has been recoded so that it is a 0 or 1 instead of a character. Other aspects of the data have not been further inspected so it is not tidy. 
+
+_Additional information_
+
+```{r addl_data, include = FALSE}
+nyctransit_df %>%
+  distinct(station_name, line) #is there a way for me to get the count in line
+
+
+```
+There are `r nrow(nyctransit_df %>% distinct(station_name,line))` distinct stations in the dataset. 
+```{r}
+
+nyctransit_df %>%
+  filter(ada == TRUE) %>% 
+  distinct(station_name, line) 
+  
 ```
 
