@@ -51,3 +51,19 @@ nyctransit_df %>%
   
 ```
 
+There are `r nrow(nyctransit_df %>% filter(ada == TRUE) %>% distinct(station_name, line))` stations that are ADA compliant. 
+
+```{r}
+
+
+  nyctransit_df %>%
+  filter(vending == "NO") %>% 
+  group_by(entry) %>% 
+  summarize(vending_entrance = n())
+
+
+#how to set it so that the false can be explicitly stated if I decided to mutate a variable 
+#how to set it so that the code divides it for me as it didn't seem straightforward
+```
+ `r 69/(114+69)` % of stations with no vending allow entrance 
+
