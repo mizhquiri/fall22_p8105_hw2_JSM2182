@@ -4,7 +4,7 @@ author: "Jennifer Mizhquiri Barbecho"
 output: github_document
 ---
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, message = FALSE}
 library(tidyverse)
 library(readxl) #excel
 library(ggplot2)
@@ -14,12 +14,7 @@ library(ggplot2)
 
 # Problem 1
 
-Read the data
-
-```{r, echo = FALSE}
-
-read_csv("./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv")
-```
+`
 ```{r, message = FALSE}
 nyctransit_df = 
   read_csv("./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv") %>%
@@ -87,9 +82,10 @@ nyctransit_long =
 
 # Problem 2
 
-Mr. Trash wheel dataset. I am adding a variable wheel with value of mr applying to all obs
+_Mr. Trash wheel dataset_
+  * I am adding a variable wheel with value of "mr" applying to all obs, for later merging.
 
-```{r}
+```{r, echo = FALSE, message = FALSE}
 mrwheels_df = 
   read_excel(
     "data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx", 
@@ -104,14 +100,15 @@ mrwheels_df =
 ```
 
 
-Professor Trashwheel dataset. I am adding a variable wheel with value of prof and applying to all obs
+_Professor Trashwheel dataset_ 
+  * I am adding a variable wheel with value of prof and applying to all obs
 
-* note that in professor wheels dumpster variable was numeric. to make it match what is in mr trashwheels, the variable is converted to character
+ * note that in professor wheels dumpster variable was numeric. to make it match what is in mr trashwheels, the variable is converted to character
 
 _Office Hour question: How to make sure that I don't mistakenly add a variable to my original dataset_
 
 
-```{r}
+```{r, echo = FALSE, message = FALSE}
 profwheels_df = 
   read_excel(
     "data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx", 
@@ -126,7 +123,7 @@ profwheels_df =
 ```
 
 Combine both datasets into combo_wheels
-```{r}
+```{r, echo = FALSE, message = FALSE}
 combo_wheels_tidy = 
   bind_rows(mrwheels_df, profwheels_df) %>%
   janitor::clean_names()
@@ -136,14 +133,14 @@ _About the combined dataset_
 
 There are `r nrow(combo_wheels_tidy)` observations in the resulting dataset. This dataset demonstrates various categories of collected items (i.e. sports balls, glass bottles, trash bottles) by weight (in tons), across years (2014 - 2021). This is helpful for generating summary stats on output and can help compare efficacy between mr. trashwheels and professor trash wheels. For example, In the year 2020, Mr. Trashwheels collected `r combo_wheels_tidy %>% filter( wheel == "mr", year == 2020) %>% summarize(sports_balls = n())` sports balls. 
 
-```{r}
+```{r, eval = FALSE}
 combo_wheels_tidy %>% 
   filter(
     wheel == "mr",
     year == 2020) %>% 
   summarize(sports_balls = n())
 ```
-```{r}
+```{r, eval = FALSE}
 combo_wheels_tidy %>%
   distinct(year) #ask why this doesn't work in inline r
 ```
@@ -156,9 +153,7 @@ Import and clean pols-month.csv
  * month is a character variable and each value is renamed to their corresponding month
  * president variable was created to denote affiliation (i.e. dem = Democrat; gop = GOP)
  * 
-```{r}
-
-
+```{r, echo = FALSE}
 pols_df = 
   read_csv("data/fivethirtyeight_datasets/pols-month.csv") %>% 
   janitor::clean_names() %>%
@@ -170,12 +165,79 @@ pols_df =
     names_to = "president", 
     names_prefix = "prez_",
     values_to = "dummy") %>% 
-  select(-dummy, -day, year, month, everything()) %>% 
+  select(-dummy, -day) %>% 
+  select(year, month, everything()) %>% #does select always need to be broken down like this
   arrange(year, month)
   
 ```
-
 ```{r}
+head(pols_df)
+```
+
+Import and clean snp.csv
+ * note: data is sorted by year and month
+ * year and month were moved to become the leading columns
+ * month is a character variable and each value is renamed to their corresponding month
+ * president variable was created to denote affiliation (i.e. dem = Democrat; gop = GOP)
+ 
+ _Why did/how can i make sure my year does not get reduced to 2 digits_
+```{r, echo = FALSE}
+snp_df = 
+  read_csv("data/fivethirtyeight_datasets/snp.csv") %>% 
+  janitor::clean_names() %>%
+  separate(date, into = c("month", "day", "year"), sep = "/") %>%
+  mutate(
+    month = recode(month, "1" = "January", "2" = "February", "3" = "March", "4" = "April", "5" = "May", "6" = "June", "7" = "July", "8" = "August", "9" = "September", "10" = "October", "11" = "November", "12" = "December")) %>% 
+  select( -day) %>% 
+  select(year, month, everything()) %>% 
+  arrange(year, month)
+  
+```
+```{r}
+head(snp_df)
+```
+
+```{r, echo = FALSE}
+unemp_df = 
+  read_csv("data/fivethirtyeight_datasets/unemployment.csv") %>% 
+  janitor::clean_names() %>% 
+  pivot_longer(
+    jan:dec,
+    names_to = "month",
+    values_to = "unemp_freq") %>% 
+  mutate(
+    month = recode(month, "jan" = "January", "feb" = "February", "mar" = "March", "apr" = "April", "may" = "May", "jun" = "June",  "jul" = "July", "aug" = "August", "sep" = "September", "oct" = "October", "nov" = "November", "dec" = "December" ),
+    year = as.character(year)) %>% 
+  select(year, month, everything()) %>% 
+  arrange(year, month)
 
 ```
 
+```{r}
+head(unemp_df)
+```
+
+
+_Joining SNP TO POLS_
+* in which pols is the given x data set with `r ncol(pols_df)` columns
+* in which snp is the given y data set with `r ncol(snp_df)` columns
+
+```{r}
+pols_snp_df = 
+  left_join(pols_df, snp_df, by = c("year" = "year", "month" = "month"))
+```
+  
+_Joining unemployment to the SNP/POLS merged dataset_
+
+```{r}
+pols_snp_unemp_df = 
+  left_join(pols_snp_df, unemp_df, by =  c("year" = "year", "month" = "month"))
+```
+
+_Combined dataset_
+```{r}
+head(pols_snp_unemp_df)
+```
+
+
+The resulting combined dataset is `r ncol(pols_snp_unemp_df)` columns by `r nrow(pols_snp_unemp_df)` rows. The year span is `r pols_snp_unemp_df %>% pull(year) %>% min()` to `r pols_snp_unemp_df %>% pull(year) %>% max()`. Key data include the frequency of senators, governors, and representatives by party affiliation, the party affiliation of the president, the close number, and the unemployment rates, all by year and month.
