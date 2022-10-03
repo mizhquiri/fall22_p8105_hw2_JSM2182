@@ -96,7 +96,15 @@ trashwheels_df =
     "data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx", 
     sheet = "Mr. Trash Wheel", range = "A2:N535") %>% 
   janitor::clean_names() %>% 
-  drop_na(dumpster)
+  drop_na(dumpster) %>% 
+  mutate(
+    sports_balls = as.integer(round(sports_balls))
+  )
 ```
 
+
+
+```{r}
+
+```
 
