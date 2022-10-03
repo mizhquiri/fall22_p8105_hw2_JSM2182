@@ -7,7 +7,6 @@ output: github_document
 ```{r, echo = FALSE}
 library(tidyverse)
 library(readxl) #excel
-library(haven) #sas
 library(ggplot2)
 ```
 
@@ -109,6 +108,9 @@ Professor Trashwheel dataset. I am adding a variable wheel with value of prof an
 
 * note that in professor wheels dumpster variable was numeric. to make it match what is in mr trashwheels, the variable is converted to character
 
+_Office Hour question: How to make sure that I don't mistakenly add a variable to my original dataset_
+
+
 ```{r}
 profwheels_df = 
   read_excel(
@@ -132,7 +134,7 @@ combo_wheels_tidy =
 
 _About the combined dataset_
 
-There are `r nrow(combo_wheels_tidy)` observations in the resulting dataset. This dataset demonstrates various categories of collected items (i.e. sports balls, glass bottles, trash bottles) by weight (in tons), across `nrow(r combo_wheels_tidy %>% distinct(year))`years (2014 - 2021). This is helpful for generating summary stats on output and can help compare efficacy between mr. trashwheels and professor trash wheels. For example, In the year 2020, Mr. Trashwheels collected `r combo_wheels_tidy %>% filter( wheel == "mr", year == 2020) %>% summarize(sports_balls = n())` sports balls. 
+There are `r nrow(combo_wheels_tidy)` observations in the resulting dataset. This dataset demonstrates various categories of collected items (i.e. sports balls, glass bottles, trash bottles) by weight (in tons), across years (2014 - 2021). This is helpful for generating summary stats on output and can help compare efficacy between mr. trashwheels and professor trash wheels. For example, In the year 2020, Mr. Trashwheels collected `r combo_wheels_tidy %>% filter( wheel == "mr", year == 2020) %>% summarize(sports_balls = n())` sports balls. 
 
 ```{r}
 combo_wheels_tidy %>% 
@@ -144,5 +146,14 @@ combo_wheels_tidy %>%
 ```{r}
 combo_wheels_tidy %>%
   distinct(year) #ask why this doesn't work in inline r
+```
+
+# Problem 3
+
+Import and clean pols-month.csv
+```{r}
+pols_df = 
+  read_csv("data/fivethirtyeight_datasets/pols-month.csv") %>% 
+  janitor::clean_names()
 ```
 
