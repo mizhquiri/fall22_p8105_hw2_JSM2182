@@ -131,7 +131,7 @@ combo_wheels_tidy =
 
 _About the combined dataset_
 
-There are `r nrow(combo_wheels_tidy)` observations in the resulting dataset. This dataset demonstrates various categories of collected items (i.e. sports balls, glass bottles, trash bottles) by weight (in tons), across years (2014 - 2021). This is helpful for generating summary stats on output and can help compare efficacy between mr. trashwheels and professor trash wheels. For example, In the year 2020, Mr. Trashwheels collected `r combo_wheels_tidy %>% filter( wheel == "mr", year == 2020) %>% summarize(sports_balls = n())` sports balls. 
+There are `r nrow(combo_wheels_tidy)` observations in the resulting dataset. This dataset demonstrates various categories of collected items (i.e. sports balls, glass bottles, trash bottles) by weight (in tons), across years (2014 - 2021). This is helpful for generating summary stats on output and can help compare efficacy between mr. trashwheels and professor trash wheels. For example, In the year 2020, Mr. Trashwheels collected `r combo_wheels_tidy %>% filter( wheel == "mr", year == 2020) %>% select(sports_balls) %>% sum()` sports balls. 
 
 ```{r, eval = FALSE}
 combo_wheels_tidy %>% 
@@ -159,6 +159,7 @@ pols_df =
   janitor::clean_names() %>%
   separate(mon, into = c("year", "month", "day"), sep = "-") %>% 
   mutate(
+    year = as.integer(year),
     month = recode(month, "01" = "January", "02" = "February", "03" = "March", "04" = "April", "05" = "May", "06" = "June", "07" = "July", "08" = "August", "09" = "September", "10" = "October", "11" = "November", "12" = "December")) %>% 
   pivot_longer(
     cols = c('prez_dem','prez_gop'),
@@ -185,13 +186,17 @@ Import and clean snp.csv
 snp_df = 
   read_csv("data/fivethirtyeight_datasets/snp.csv") %>% 
   janitor::clean_names() %>%
-  separate(date, into = c("month", "day", "year"), sep = "/") %>%
   mutate(
-    month = recode(month, "1" = "January", "2" = "February", "3" = "March", "4" = "April", "5" = "May", "6" = "June", "7" = "July", "8" = "August", "9" = "September", "10" = "October", "11" = "November", "12" = "December")) %>% 
-  select( -day) %>% 
+    date = lubridate::mdy(date)) %>% 
+  separate(col = date, into = c("year", "month", "day"), convert = TRUE, sep = "-") %>%
+  mutate(
+    month = recode(month, "1" = "January", "2" = "February", "3" = "March", "4" = "April", "5" = "May", "6" = "June", "7" = "July", "8" = "August", "9" = "September", "10" = "October", "11" = "November", "12" = "December")) %>%
   select(year, month, everything()) %>% 
+  select(-day) %>% 
   arrange(year, month)
-  
+
+#you can try to use lubridate by using bracket and the dataset name 
+#you can try to recode based on this by adding the 2000 to a certain range
 ```
 ```{r}
 head(snp_df)
@@ -206,8 +211,8 @@ unemp_df =
     names_to = "month",
     values_to = "unemp_freq") %>% 
   mutate(
-    month = recode(month, "jan" = "January", "feb" = "February", "mar" = "March", "apr" = "April", "may" = "May", "jun" = "June",  "jul" = "July", "aug" = "August", "sep" = "September", "oct" = "October", "nov" = "November", "dec" = "December" ),
-    year = as.character(year)) %>% 
+    year = as.integer(year),
+    month = recode(month, "jan" = "January", "feb" = "February", "mar" = "March", "apr" = "April", "may" = "May", "jun" = "June",  "jul" = "July", "aug" = "August", "sep" = "September", "oct" = "October", "nov" = "November", "dec" = "December" )) %>% 
   select(year, month, everything()) %>% 
   arrange(year, month)
 
