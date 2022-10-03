@@ -151,9 +151,31 @@ combo_wheels_tidy %>%
 # Problem 3
 
 Import and clean pols-month.csv
+ * note: data is sorted by year and month
+ * year and month were moved to become the leading columns
+ * month is a character variable and each value is renamed to their corresponding month
+ * president variable was created to denote affiliation (i.e. dem = Democrat; gop = GOP)
+ * 
 ```{r}
+
+
 pols_df = 
   read_csv("data/fivethirtyeight_datasets/pols-month.csv") %>% 
-  janitor::clean_names()
+  janitor::clean_names() %>%
+  separate(mon, into = c("year", "month", "day"), sep = "-") %>% 
+  mutate(
+    month = recode(month, "01" = "January", "02" = "February", "03" = "March", "04" = "April", "05" = "May", "06" = "June", "07" = "July", "08" = "August", "09" = "September", "10" = "October", "11" = "November", "12" = "December")) %>% 
+  pivot_longer(
+    cols = c('prez_dem','prez_gop'),
+    names_to = "president", 
+    names_prefix = "prez_",
+    values_to = "dummy") %>% 
+  select(-dummy, -day, year, month, everything()) %>% 
+  arrange(year, month)
+  
+```
+
+```{r}
+
 ```
 
