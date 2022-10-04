@@ -171,8 +171,6 @@ _Professor Trashwheel dataset_
 
  *  note that in professor wheels dumpster variable was numeric. to make it match what is in mr trashwheels, the variable is converted to character
 
-_Office Hour question: How to make sure that I don't mistakenly add a variable to my original dataset_
-
 
 ```{r, echo = FALSE, message = FALSE}
 profwheels_df = 
@@ -207,6 +205,7 @@ Import and clean pols-month.csv
  * year and month were moved to become the leading columns
  * month is a character variable and each value is renamed to their corresponding month
  * president variable was created to denote affiliation (i.e. dem = Democrat; gop = GOP)
+ * FYI the dummy variable was dropped although the indicator variable of 0, 1 is false across select rows where they are listed as 2. This would require further inspection. 
  
 ```{r, echo = FALSE}
 pols_df = 
@@ -222,7 +221,7 @@ pols_df =
     names_prefix = "prez_",
     values_to = "dummy") %>% 
   select(-dummy, -day) %>% 
-  select(year, month, everything()) %>% #does select always need to be broken down like this
+  select(year, month, everything()) %>% #does select always need to be broken down like this. yes.
   arrange(year, month)
   
 ```
