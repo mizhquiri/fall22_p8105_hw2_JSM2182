@@ -18,11 +18,12 @@ library(ggplot2)
 ```{r, message = FALSE}
 nyctransit_df = 
   read_csv("./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv") %>%
-  janitor::clean_names() %>% # figure out how to make NAs blank
+  janitor::clean_names() %>% 
   select(line:entry, vending, ada) %>% 
   mutate(entry = recode(entry, "YES" = 1, "NO" = 0)) #when to use <-
 
 ```
+
 ```{r}
 head(nyctransit_df)
 ```
@@ -148,8 +149,11 @@ trans_ent %>%
 
 # Problem 2
 
-_Mr. Trash wheel dataset_
-  * I am adding a variable wheel with value of "mr" applying to all obs, for later merging.
+_Mr. Trash Wheel dataset_
+  * variable names are cleaned
+  * rows not containing dumpster values are removed
+  * note that "dumpster" is a character variable
+  * a variable "whee" with value of "mr" has been applied to all obs, to facilitate tracking and later merging.
 
 ```{r, echo = FALSE, message = FALSE}
 mrwheels_df = 
@@ -167,9 +171,11 @@ mrwheels_df =
 
 
 _Professor Trashwheel dataset_ 
-  * I am adding a variable wheel with value of prof and applying to all obs
-
- *  note that in professor wheels dumpster variable was numeric. to make it match what is in mr trashwheels, the variable is converted to character
+  * variable names are cleaned
+  * rows not containing dumpster values are removed
+  * a variable "whee" with value of "prof" has been applied to all obs, to facilitate tracking and later merging.
+  * sports_ball is rounded/set to an integer
+  * note that dumpster variable was originally numeric. To make it match what is in the Mr Trashwheels dataset, the variable in Professor Trashwheel is converted to character
 
 
 ```{r, echo = FALSE, message = FALSE}
@@ -186,16 +192,20 @@ profwheels_df =
   )
 ```
 
-Combine both datasets into combo_wheels
+
+_Combining Mr. Trashwheels & Professor Trashwheels Dataset_
+
+  * Combine both datasets into a dataset called "combo_wheels_tidy"
+  
 ```{r, echo = FALSE, message = FALSE}
 combo_wheels_tidy = 
   bind_rows(mrwheels_df, profwheels_df) %>%
   janitor::clean_names()
 ```
 
-_About the combined dataset_
+* About the Dataset:
 
-There are `r nrow(combo_wheels_tidy)` observations in the resulting dataset. This dataset demonstrates various categories of collected items (i.e. sports balls, glass bottles, trash bottles) by weight (in tons), across years (2014 - 2021). This is helpful for generating summary stats on output and can help compare productivity between Mr. Trashwheels and Professor Trashwheels. For example, Mr. Trashwheel collected `r combo_wheels_tidy %>% filter(wheel == "prof") %>%  select(weight_tons) %>% sum()` tons, and in the year 2020, Mr. Trashwheels collected `r combo_wheels_tidy %>% filter( wheel == "mr", year == 2020) %>% select(sports_balls) %>% sum()` sports balls. 
+There are `r nrow(combo_wheels_tidy)` observations in the resulting dataset. This dataset demonstrates various categories of collected items (i.e. sports balls, glass bottles, trash bottles) by weight (in tons), across years (2014 - 2021), for a trash-collection, water-vessel based initiative. This is helpful for generating summary stats on output and can help compare productivity between Mr. Trashwheels and Professor Trashwheels. For example, Mr. Trashwheel collected `r combo_wheels_tidy %>% filter(wheel == "prof") %>%  select(weight_tons) %>% sum()` tons, and in the year 2020, Mr. Trashwheels collected `r combo_wheels_tidy %>% filter( wheel == "mr", year == 2020) %>% select(sports_balls) %>% sum()` sports balls. 
 
 
 # Problem 3
