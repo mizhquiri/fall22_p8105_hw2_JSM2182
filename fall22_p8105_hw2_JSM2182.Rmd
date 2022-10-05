@@ -239,10 +239,9 @@ Import and clean snp.csv
 snp_df = 
   read_csv("data/fivethirtyeight_datasets/snp.csv") %>% 
   janitor::clean_names() %>%
+  separate(date, into = c("month", "day", "year"), sep = "/") %>% 
   mutate(
-    date = lubridate::mdy(date)) %>% 
-  separate(col = date, into = c("year", "month", "day"), convert = TRUE, sep = "-") %>%
-  mutate(
+    year = if_else(as.integer(year) < 23, 2000 + (as.integer(year)), 1900 + (as.integer(year))),
     month = recode(month, "1" = "January", "2" = "February", "3" = "March", "4" = "April", "5" = "May", "6" = "June", "7" = "July", "8" = "August", "9" = "September", "10" = "October", "11" = "November", "12" = "December")) %>%
   select(year, month, everything()) %>% 
   select(-day) %>% 
