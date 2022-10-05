@@ -7,7 +7,7 @@ output: github_document
 ```{r, echo = FALSE, message = FALSE}
 library(tidyverse)
 library(readxl) #excel
-library(ggplot2)
+
 ```
 
 
@@ -152,20 +152,22 @@ trans_ent %>%
 _Mr. Trash Wheel dataset_
   * variable names are cleaned
   * rows not containing dumpster values are removed
-  * note that "dumpster" is a character variable
-  * a variable "whee" with value of "mr" has been applied to all obs, to facilitate tracking and later merging.
+  * note that "dumpster" is a numeric variable
+  * sports_ball is rounded/set to an integer
+  * note that year has been changed to an integer
+  * a variable "wheel" with value of "mr" has been applied to all obs, to facilitate tracking after merging.
 
 ```{r, echo = FALSE, message = FALSE}
 mrwheels_df = 
   read_excel(
-    "data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx", 
-    sheet = "Mr. Trash Wheel", range = "A2:N535") %>% 
+    "data/Trash Wheel Collection Data.xlsx", 
+    sheet = "Mr. Trash Wheel", range = "A2:N549") %>% 
   janitor::clean_names() %>% 
   drop_na(dumpster) %>% 
   mutate(
     wheel = "mr",
-    sports_balls = as.integer(round(sports_balls),
-    dumpster = as.character(dumpster))
+    sports_balls = as.integer(round(sports_balls)),
+    year = as.integer(year)
   )
 ```
 
@@ -173,23 +175,19 @@ mrwheels_df =
 _Professor Trashwheel dataset_ 
   * variable names are cleaned
   * rows not containing dumpster values are removed
-  * a variable "whee" with value of "prof" has been applied to all obs, to facilitate tracking and later merging.
-  * sports_ball is rounded/set to an integer
-  * note that dumpster variable was originally numeric. To make it match what is in the Mr Trashwheels dataset, the variable in Professor Trashwheel is converted to character
+  * a variable "wheel" with value of "prof" has been applied to all obs, to facilitate tracking and later merging
+  * note that sports balls is NOT included as a variable
+  * note that dumpster variable is a numeric variable
 
 
 ```{r, echo = FALSE, message = FALSE}
 profwheels_df = 
   read_excel(
-    "data/Trash-Wheel-Collection-Totals-7-2020-2.xlsx", 
-    sheet = "Professor Trash Wheel", range = "A2:N117") %>% 
+    "data/Trash Wheel Collection Data.xlsx", 
+    sheet = "Professor Trash Wheel", range = "A2:M96") %>% 
   janitor::clean_names() %>% 
   drop_na(dumpster) %>%
-  mutate(
-    wheel = "prof",
-    sports_balls = as.integer(round(sports_balls)),
-    dumpster = as.character(dumpster)
-  )
+  mutate(wheel = "prof")
 ```
 
 
@@ -205,7 +203,11 @@ combo_wheels_tidy =
 
 * About the Dataset:
 
-There are `r nrow(combo_wheels_tidy)` observations in the resulting dataset. This dataset demonstrates various categories of collected items (i.e. sports balls, glass bottles, trash bottles) by weight (in tons), across years (2014 - 2021), for a trash-collection, water-vessel based initiative. This is helpful for generating summary stats on output and can help compare productivity between Mr. Trashwheels and Professor Trashwheels. For example, Mr. Trashwheel collected `r combo_wheels_tidy %>% filter(wheel == "prof") %>%  select(weight_tons) %>% sum()` tons, and in the year 2020, Mr. Trashwheels collected `r combo_wheels_tidy %>% filter( wheel == "mr", year == 2020) %>% select(sports_balls) %>% sum()` sports balls. 
+```{r}
+head(combo_wheels_tidy)
+```
+
+There are `r nrow(combo_wheels_tidy)` observations in the resulting dataset. This dataset demonstrates various categories of collected items (i.e. sports balls, glass bottles, trash bottles) by weight (in tons), across years (`r combo_wheels_tidy %>% pull(year) %>% min()` - `r combo_wheels_tidy %>% pull(year) %>% max()`), for a trash-collection, water-vessel based initiative. This is helpful for generating summary stats on output and can help compare productivity between Mr. Trashwheels and Professor Trashwheels. For example, Mr. Trashwheel collected `r combo_wheels_tidy %>% filter(wheel == "prof") %>%  select(weight_tons) %>% sum()` tons, and in the year 2020, Mr. Trashwheels collected `r combo_wheels_tidy %>% filter( wheel == "mr", year == 2020) %>% select(sports_balls) %>% sum()` sports balls. 
 
 
 # Problem 3
