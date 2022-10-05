@@ -12,75 +12,8 @@ library(readxl) #excel
 
 
 
-# Problem 1
+# Problem 1 (provided solution)
 
-`
-```{r, message = FALSE}
-nyctransit_df = 
-  read_csv("./data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv") %>%
-  janitor::clean_names() %>% 
-  select(line:entry, vending, ada) %>% 
-  mutate(entry = recode(entry, "YES" = 1, "NO" = 0)) #when to use <-
-
-```
-
-```{r}
-head(nyctransit_df)
-```
-This dataset contains administrative, compliance, and geographic data on the NYC transit system. It has `r ncol(nyctransit_df)` columns and `r nrow(nyctransit_df)` rows. At this point, the variable names have been cleaned and one variable (entry) has been recoded so that it is a 0 or 1 instead of a character. Other aspects of the data have not been further inspected so it is not tidy. 
-
-_Additional information_
-
-```{r addl_data, include = FALSE}
-nyctransit_df %>%
-  distinct(station_name, line) #is there a way for me to get the count in line
-
-
-```
-There are `r nrow(nyctransit_df %>% distinct(station_name,line))` distinct stations in the dataset. 
-```{r, echo = FALSE}
-
-nyctransit_df %>%
-  filter(ada == TRUE) %>% 
-  distinct(station_name, line) 
-  
-```
-
-There are `r nrow(nyctransit_df %>% filter(ada == TRUE) %>% distinct(station_name, line))` stations that are ADA compliant. 
-
-```{r, echo = FALSE}
-
-
-  nyctransit_df %>%
-  filter(vending == "NO") %>% 
-  group_by(entry) %>% 
-  summarize(vending_entrance = n())
-
-
-#how to set it so that the false can be explicitly stated if I decided to mutate a variable 
-#how to set it so that the code divides it for me as it didn't seem straightforward
-```
- `r 69/(114+69)` % of stations with no vending allow entrance.
-
-_reformat the data_
-
-```{r, eval = FALSE}
-nyctransit_long = 
-  nyctransit_df %>% 
-  mutate(
-    route8 = as.character(route8)) %>% 
-  pivot_longer(
-    nyctransit_df, route1:route11,
-    names_to = "route_num",
-    names_prefix = "route",
-    values_to = "route_name") %>% 
-  mutate(
-    route_num = factor(route_num)
-  )
-  
-
-```
-### Problem 1
 
 Below we import and clean data from `NYC_Transit_Subway_Entrance_And_Exit_Data.csv`. The process begins with data import, updates variable names, and selects the columns that will be used in later parts fo this problem. We update `entry` from `yes` / `no` to a logical variable. As part of data import, we specify that `Route` columns 8-11 should be character for consistency with 1-7.
 
@@ -149,7 +82,7 @@ trans_ent %>%
 
 # Problem 2
 
-_Mr. Trash Wheel dataset_
+_Step 1: Read and clean Mr. Trash Wheel dataset_
   * variable names are cleaned
   * rows not containing dumpster values are removed
   * note that "dumpster" is a numeric variable
@@ -157,7 +90,7 @@ _Mr. Trash Wheel dataset_
   * note that year has been changed to an integer
   * a variable "wheel" with value of "mr" has been applied to all obs, to facilitate tracking after merging.
 
-```{r, echo = FALSE, message = FALSE}
+```{r mrwheels_chunk, echo = FALSE, message = FALSE}
 mrwheels_df = 
   read_excel(
     "data/Trash Wheel Collection Data.xlsx", 
@@ -172,15 +105,16 @@ mrwheels_df =
 ```
 
 
-_Professor Trashwheel dataset_ 
+_Step 2: Professor Trashwheel dataset_ 
   * variable names are cleaned
   * rows not containing dumpster values are removed
   * a variable "wheel" with value of "prof" has been applied to all obs, to facilitate tracking and later merging
   * note that sports balls is NOT included as a variable
   * note that dumpster variable is a numeric variable
+  * note that year is an integer
 
 
-```{r, echo = FALSE, message = FALSE}
+```{r profwheels_chunk, echo = FALSE, message = FALSE}
 profwheels_df = 
   read_excel(
     "data/Trash Wheel Collection Data.xlsx", 
@@ -191,11 +125,11 @@ profwheels_df =
 ```
 
 
-_Combining Mr. Trashwheels & Professor Trashwheels Dataset_
+_Step 3: Combining Mr. Trash Wheel & Professor Trash Wheel Dataset_
 
   * Combine both datasets into a dataset called "combo_wheels_tidy"
   
-```{r, echo = FALSE, message = FALSE}
+```{r combo_trash_chunk, echo = FALSE, message = FALSE}
 combo_wheels_tidy = 
   bind_rows(mrwheels_df, profwheels_df) %>%
   janitor::clean_names()
@@ -203,7 +137,7 @@ combo_wheels_tidy =
 
 * About the Dataset:
 
-```{r}
+```{r print_combo_trash}
 head(combo_wheels_tidy)
 ```
 
