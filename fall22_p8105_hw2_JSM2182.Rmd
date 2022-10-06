@@ -83,6 +83,7 @@ trans_ent %>%
 # Problem 2
 
 _Step 1: Read and clean Mr. Trash Wheel dataset_
+
   * variable names are cleaned
   * rows not containing dumpster values are removed
   * note that "dumpster" is a numeric variable
@@ -106,6 +107,7 @@ mrwheels_df =
 
 
 _Step 2: Professor Trashwheel dataset_ 
+
   * variable names are cleaned
   * rows not containing dumpster values are removed
   * a variable "wheel" with value of "prof" has been applied to all obs, to facilitate tracking and later merging
@@ -146,49 +148,66 @@ There are `r nrow(combo_wheels_tidy)` observations in the resulting dataset. Thi
 
 # Problem 3
 
+_Cleaning Dataset 1: Presidential and Congressional Parties by Year_
+
 Import and clean pols-month.csv
- * note: data is sorted by year and month
+
+ * note: data is sorted by year and month with month set as a factor and year set as an integer
  * year and month were moved to become the leading columns
- * month is a character variable and each value is renamed to their corresponding month
+ * month is a factor variable and each value is renamed/reset to their corresponding month
  * president variable was created to denote affiliation (i.e. dem = Democrat; gop = GOP)
- * FYI the dummy variable was dropped although the indicator variable of 0, 1 is false across select rows where they are listed as 2. This would require further inspection. 
+ * there is an aberration in the data. In most cases prez_gop and prez_dem could be considered binary variables (0 = no, 1 = yes), however there is a case of  2 from August 1974 until January 1975. This is likely due to Nixon's resignation in which there were "2" presidents who occupied the given year and who were republicans. 
+ * This may require further inspection and as such the dummy variable was ultimately retained
  
-```{r, echo = FALSE}
+```{r, echo = FALSE, message = FALSE}
 pols_df = 
   read_csv("data/fivethirtyeight_datasets/pols-month.csv") %>% 
   janitor::clean_names() %>%
-  separate(mon, into = c("year", "month", "day"), sep = "-") %>% 
+  separate(mon, into = c("year", "month", "day"), sep = "-") %>%
   mutate(
     year = as.integer(year),
-    month = recode(month, "01" = "January", "02" = "February", "03" = "March", "04" = "April", "05" = "May", "06" = "June", "07" = "July", "08" = "August", "09" = "September", "10" = "October", "11" = "November", "12" = "December")) %>% 
+    month = recode(month, "01" = "January", "02" = "February", "03" = "March", "04" = "April", "05" = "May", "06" = "June", "07" = "July", "08" = "August", "09" = "September", "10" = "October", "11" = "November", "12" = "December"),
+    month = as.factor(month),
+    month = factor(month, levels = c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"))) %>%
   pivot_longer(
     cols = c('prez_dem','prez_gop'),
     names_to = "president", 
     names_prefix = "prez_",
-    values_to = "dummy") %>% 
-  select(-dummy, -day) %>% 
-  select(year, month, everything()) %>% #does select always need to be broken down like this. yes.
-  arrange(year, month)
+    values_to = "dummy") %>%
+  filter(
+    !dummy %in% c(0)) %>% 
+  select(-day) %>% 
+  select(year, month, everything()) %>%
+  arrange(year, month) 
+
   
 ```
+
 ```{r}
 head(pols_df)
 ```
 
+_Cleaning Dataset 2: SNP_
+
 Import and clean snp.csv
+
  * note: data is sorted by year and month
  * year and month were moved to become the leading columns
- * month is a character variable and each value is renamed to their corresponding month
- * president variable was created to denote affiliation (i.e. dem = Democrat; gop = GOP)
+ * month is a factor variable and each value is renamed/reset to their corresponding month
+
  
-```{r, echo = FALSE}
+```{r, echo = FALSE, message = FALSE}
 snp_df = 
   read_csv("data/fivethirtyeight_datasets/snp.csv") %>% 
   janitor::clean_names() %>%
   separate(date, into = c("month", "day", "year"), sep = "/") %>% 
   mutate(
-    year = if_else(as.integer(year) < 23, 2000 + (as.integer(year)), 1900 + (as.integer(year))),
-    month = recode(month, "1" = "January", "2" = "February", "3" = "March", "4" = "April", "5" = "May", "6" = "June", "7" = "July", "8" = "August", "9" = "September", "10" = "October", "11" = "November", "12" = "December")) %>%
+    year = if_else(
+      as.integer(year) < 23, 2000 + (as.integer(year)), 
+      1900 + (as.integer(year))),
+    month = recode(month, "1" = "January", "2" = "February", "3" = "March", "4" = "April", "5" = "May", "6" = "June", "7" = "July", "8" = "August", "9" = "September", "10" = "October", "11" = "November", "12" = "December"),
+    month = as.factor(month),
+    month = factor(month, levels = c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"))) %>%
   select(year, month, everything()) %>% 
   select(-day) %>% 
   arrange(year, month)
@@ -200,7 +219,14 @@ snp_df =
 head(snp_df)
 ```
 
-```{r, echo = FALSE}
+
+_Cleaning Dataset 3: Unemployment_
+
+ * note: data is sorted by year and month
+ * year and month were moved to become the leading columns
+ * month is a factor variable and each value is renamed/reset to their corresponding month
+
+```{r, echo = FALSE, message = FALSE}
 unemp_df = 
   read_csv("data/fivethirtyeight_datasets/unemployment.csv") %>% 
   janitor::clean_names() %>% 
@@ -210,7 +236,9 @@ unemp_df =
     values_to = "unemp_freq") %>% 
   mutate(
     year = as.integer(year),
-    month = recode(month, "jan" = "January", "feb" = "February", "mar" = "March", "apr" = "April", "may" = "May", "jun" = "June",  "jul" = "July", "aug" = "August", "sep" = "September", "oct" = "October", "nov" = "November", "dec" = "December" )) %>% 
+    month = recode(month, "jan" = "January", "feb" = "February", "mar" = "March", "apr" = "April", "may" = "May", "jun" = "June",  "jul" = "July", "aug" = "August", "sep" = "September", "oct" = "October", "nov" = "November", "dec" = "December" ),
+    month = as.factor(month),
+    month = factor(month, levels = c("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"))) %>% 
   select(year, month, everything()) %>% 
   arrange(year, month)
 
@@ -225,14 +253,14 @@ _Joining SNP TO POLS_
 * in which pols is the given x data set with `r ncol(pols_df)` columns
 * in which snp is the given y data set with `r ncol(snp_df)` columns
 
-```{r}
+```{r, echo = FALSE, message = FALSE}
 pols_snp_df = 
   left_join(pols_df, snp_df, by = c("year" = "year", "month" = "month"))
 ```
   
 _Joining unemployment to the SNP/POLS merged dataset_
 
-```{r}
+```{r, echo = FALSE, message = FALSE}
 pols_snp_unemp_df = 
   left_join(pols_snp_df, unemp_df, by =  c("year" = "year", "month" = "month"))
 ```
@@ -243,4 +271,4 @@ head(pols_snp_unemp_df)
 ```
 
 
-The resulting combined dataset is `r ncol(pols_snp_unemp_df)` columns by `r nrow(pols_snp_unemp_df)` rows. The year span is `r pols_snp_unemp_df %>% pull(year) %>% min()` to `r pols_snp_unemp_df %>% pull(year) %>% max()`. Key data include the frequency of senators, governors, and representatives by party affiliation, the party affiliation of the president, the close number, and the unemployment rates, all by year and month.
+The resulting combined dataset is `r ncol(pols_snp_unemp_df)` columns by `r nrow(pols_snp_unemp_df)` rows. The year span is `r pols_snp_unemp_df %>% pull(year) %>% min()` to `r pols_snp_unemp_df %>% pull(year) %>% max()`. Key data include the frequency of senators, governors, and representatives by party affiliation, the party affiliation of the president, the close number, and the unemployment rates, all by year and month. 
