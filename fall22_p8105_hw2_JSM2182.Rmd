@@ -143,7 +143,7 @@ combo_wheels_tidy =
 head(combo_wheels_tidy)
 ```
 
-There are `r nrow(combo_wheels_tidy)` observations in the resulting dataset. This dataset demonstrates various categories of collected items (i.e. sports balls, glass bottles, trash bottles) by weight (in tons), across years (`r combo_wheels_tidy %>% pull(year) %>% min()` - `r combo_wheels_tidy %>% pull(year) %>% max()`), for a trash-collection, water-vessel based initiative. This is helpful for generating summary stats on output and can help compare productivity between Mr. Trashwheels and Professor Trashwheels. For example, Mr. Trashwheel collected `r combo_wheels_tidy %>% filter(wheel == "prof") %>%  select(weight_tons) %>% sum()` tons, and in the year 2020, Mr. Trashwheels collected `r combo_wheels_tidy %>% filter( wheel == "mr", year == 2020) %>% select(sports_balls) %>% sum()` sports balls. 
+There are `r nrow(combo_wheels_tidy)` observations in the resulting dataset. This dataset demonstrates various categories of collected items (i.e. sports balls, glass bottles, trash bottles) by weight (in tons), across years (`r combo_wheels_tidy %>% pull(year) %>% min()` - `r combo_wheels_tidy %>% pull(year) %>% max()`), for a trash-collection, water-vessel based initiative. This is helpful for generating summary stats on output and can help compare productivity between Mr. Trashwheels and Professor Trashwheels. For example, Mr. Trashwheel collected `r combo_wheels_tidy %>% filter(wheel == "prof") %>%  select(weight_tons) %>% sum()` tons since the beginning of data collection, and in the year 2020, Mr. Trashwheels collected `r combo_wheels_tidy %>% filter( wheel == "mr", year == 2020) %>% select(sports_balls) %>% sum()` sports balls. 
 
 
 # Problem 3
@@ -187,7 +187,7 @@ pols_df =
 head(pols_df)
 ```
 
-_Cleaning Dataset 2: SNP_
+_Cleaning Dataset 2: S&P_
 
 Import and clean snp.csv
 
@@ -212,8 +212,6 @@ snp_df =
   select(-day) %>% 
   arrange(year, month)
 
-#you can try to use lubridate by using bracket and the dataset name 
-#you can try to recode based on this by adding the 2000 to a certain range
 ```
 ```{r}
 head(snp_df)
@@ -249,7 +247,10 @@ head(unemp_df)
 ```
 
 
-_Joining SNP TO POLS_
+_Interim Steps to Combine Datasets by Year and Month:_
+
+1. Joining SNP TO POLS
+
 * in which pols is the given x data set with `r ncol(pols_df)` columns
 * in which snp is the given y data set with `r ncol(snp_df)` columns
 
@@ -258,17 +259,22 @@ pols_snp_df =
   left_join(pols_df, snp_df, by = c("year" = "year", "month" = "month"))
 ```
   
-_Joining unemployment to the SNP/POLS merged dataset_
+2. Joining unemployment to the SNP/POLS merged dataset
+
+* in which the combined dataset of snp/pols is the given x data set with `r ncol(pols_snp_df)` columns
+* in which unemployment is the given y data set with `r ncol(unemp_df)` columns
+
 
 ```{r, echo = FALSE, message = FALSE}
 pols_snp_unemp_df = 
   left_join(pols_snp_df, unemp_df, by =  c("year" = "year", "month" = "month"))
 ```
 
-_Combined dataset_
+_Final Combined dataset_
 ```{r}
 head(pols_snp_unemp_df)
+
 ```
 
 
-The resulting combined dataset is `r ncol(pols_snp_unemp_df)` columns by `r nrow(pols_snp_unemp_df)` rows. The year span is `r pols_snp_unemp_df %>% pull(year) %>% min()` to `r pols_snp_unemp_df %>% pull(year) %>% max()`. Key data include the frequency of senators, governors, and representatives by party affiliation, the party affiliation of the president, the close number, and the unemployment rates, all by year and month. 
+The first dataset was based on congressional and presidential politicians including years and their party affiliations. The second dataset was the S&P market rates which serves as a proxy for the state of the economy. The third dataset contains unemployment percentages in a given month and year. The resulting combined dataset is `r ncol(pols_snp_unemp_df)` columns by `r nrow(pols_snp_unemp_df)` rows. The year span is `r pols_snp_unemp_df %>% pull(year) %>% min()` to `r pols_snp_unemp_df %>% pull(year) %>% max()`. Key data include the frequency of senators, governors, and representatives by party affiliation, the party affiliation of the president, the close number, and the unemployment rates, all by year and month. This data set can be impactful in providing insight into any combination of the data.
